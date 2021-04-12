@@ -25,9 +25,11 @@ inputs:
     required: false
   add_pr_labels:
     description: 'add labels to the PR indicating the issue severity based on audit results'
+    default: 'false'
     required: false
   fail_on_vulnerabilities_found:
     description: 'If the action should fail when vulnerabilities are found'
+    default: 'false'
     required: false
   issue_title:
     description: 'Issue title'
