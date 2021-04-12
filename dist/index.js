@@ -598,19 +598,19 @@ class Audit {
         if (vulnerabilities != null && typeof vulnerabilities === 'object') {
             Object.entries(vulnerabilities).forEach(([severity, amount]) => {
                 if (severity === 'critical' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains critical vulnerabilities';
+                    return highestVulnerabilitlevel = 'Contains critical severity vulnerabilities';
                 }
                 if (severity === 'high' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains high vulnerabilities';
+                    return highestVulnerabilitlevel = 'Contains high severity vulnerabilities';
                 }
                 if (severity === 'moderate' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains moderate vulnerabilities';
+                    return highestVulnerabilitlevel = 'Contains moderate severity vulnerabilities';
                 }
                 if (severity === 'low' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains low vulnerabilities';
+                    return highestVulnerabilitlevel = 'Contains low severity vulnerabilities';
                 }
                 if (severity === 'info' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains info vulnerabilities';
+                    return highestVulnerabilitlevel = 'Contains info severity vulnerabilities';
                 }
             });
         }
