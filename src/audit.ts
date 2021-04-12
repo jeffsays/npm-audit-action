@@ -19,9 +19,9 @@ export class Audit {
         auditOptions.push('--production')
       }
 
-      // if (jsonFlag === 'true') {
-      auditOptions.push('--json')
-      // }
+      if (jsonFlag === 'true') {
+        auditOptions.push('--json')
+      }
 
       const result: SpawnSyncReturns<string> = spawnSync('npm', auditOptions, {
         encoding: 'utf-8',

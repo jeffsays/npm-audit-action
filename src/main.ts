@@ -30,10 +30,10 @@ export async function run(): Promise<void> {
       throw new Error('Invalid input: production_flag')
     }
 
-    const jsonFlag = core.getInput('json_flag', {required: false})
-    if (!['true', 'false'].includes(jsonFlag)) {
-      throw new Error('Invalid input: json_flag')
-    }
+    // const jsonFlag = core.getInput('json_flag', {required: false})
+    // if (!['true', 'false'].includes(jsonFlag)) {
+    //   throw new Error('Invalid input: json_flag')
+    // }
 
     const addPrLabels = core.getInput('add_pr_labels', {required: false})
     if (!['true', 'false'].includes(addPrLabels)) {
@@ -47,7 +47,7 @@ export async function run(): Promise<void> {
 
     // run `npm audit`
     const audit = new Audit()
-    audit.run(auditLevel, productionFlag, jsonFlag)
+    audit.run(auditLevel, productionFlag, 'true')
     core.info(audit.stdout)
     core.setOutput('npm_audit', audit.stdout)
 

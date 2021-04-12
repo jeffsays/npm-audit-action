@@ -562,9 +562,9 @@ class Audit {
             if (productionFlag === 'true') {
                 auditOptions.push('--production');
             }
-            // if (jsonFlag === 'true') {
-            auditOptions.push('--json');
-            // }
+            if (jsonFlag === 'true') {
+                auditOptions.push('--json');
+            }
             const result = child_process_1.spawnSync('npm', auditOptions, {
                 encoding: 'utf-8',
                 maxBuffer: SPAWN_PROCESS_BUFFER_SIZE
@@ -592,22 +592,25 @@ class Audit {
     strippedStdout() {
         return `\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\``;
     }
-    getHighestVulnerabilitlevel() {
+    getHighestVulnerabilityLevel() {
         const { metadata: { vulnerabilities } } = JSON.parse(this.stdout);
         let highestVulnerabilitlevel = '';
         if (vulnerabilities != null && typeof vulnerabilities === 'object') {
             Object.entries(vulnerabilities).forEach(([severity, amount]) => {
                 if (severity === 'critical' && amount > 0) {
-                    highestVulnerabilitlevel = 'critical';
+                    return highestVulnerabilitlevel = 'critical';
                 }
                 if (severity === 'high' && amount > 0) {
-                    highestVulnerabilitlevel = 'high';
+                    return highestVulnerabilitlevel = 'high';
                 }
                 if (severity === 'moderate' && amount > 0) {
-                    highestVulnerabilitlevel = 'moderate';
+                    return highestVulnerabilitlevel = 'moderate';
                 }
                 if (severity === 'low' && amount > 0) {
-                    highestVulnerabilitlevel = 'low';
+                    return highestVulnerabilitlevel = 'low';
+                }
+                if (severity === 'info' && amount > 0) {
+                    return highestVulnerabilitlevel = 'info';
                 }
             });
         }
@@ -1728,10 +1731,10 @@ function run() {
             if (!['true', 'false'].includes(productionFlag)) {
                 throw new Error('Invalid input: production_flag');
             }
-            const jsonFlag = core.getInput('json_flag', { required: false });
-            if (!['true', 'false'].includes(jsonFlag)) {
-                throw new Error('Invalid input: json_flag');
-            }
+            // const jsonFlag = core.getInput('json_flag', {required: false})
+            // if (!['true', 'false'].includes(jsonFlag)) {
+            //   throw new Error('Invalid input: json_flag')
+            // }
             const addPrLabels = core.getInput('add_pr_labels', { required: false });
             if (!['true', 'false'].includes(addPrLabels)) {
                 throw new Error('Invalid input: add_pr_labels');
@@ -1742,7 +1745,7 @@ function run() {
             }
             // run `npm audit`
             const audit = new audit_1.Audit();
-            audit.run(auditLevel, productionFlag, jsonFlag);
+            audit.run(auditLevel, productionFlag, 'true');
             core.info(audit.stdout);
             core.setOutput('npm_audit', audit.stdout);
             if (audit.foundVulnerability()) {
@@ -1756,11 +1759,9 @@ function run() {
                 if (ctx.event_name === 'pull_request') {
                     yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
                     if (addPrLabels === 'true') {
-                        const highestVulnerabilitlevel = audit.getHighestVulnerabilitlevel();
+                        const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel();
                         // add highest vulnerability level to PR as label
-                        if (!!highestVulnerabilitlevel) {
-                            octokit.issues.addLabels({ owner: github.context.repo.owner, repo: github.context.repo.repo, issue_number: ctx.event.number, labels: [highestVulnerabilitlevel] });
-                        }
+                        octokit.issues.addLabels({ owner: github.context.repo.owner, repo: github.context.repo.repo, issue_number: ctx.event.number, labels: [highestVulnerabilitlevel] });
                     }
                     if (failOnVulnerabilityFound === 'true') {
                         core.setFailed('This repo has some vulnerabilities');
