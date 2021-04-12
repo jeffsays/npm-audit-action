@@ -76,6 +76,27 @@ describe('run', () => {
     expect(audit.foundVulnerability()).toBeTruthy()
   })
 
+  test('return highest vulnerability level from audit report correctly', () => {
+    mocked(child_process).spawnSync.mockImplementation((): any => {
+      const stdout = fs.readFileSync(
+        path.join(__dirname, 'testdata/audit/error.json')
+      )
+
+      return {
+        pid: 100,
+        output: [stdout],
+        stdout,
+        stderr: '',
+        status: 1,
+        signal: null,
+        error: null
+      }
+    })
+
+    audit.run('low', 'false', 'true')
+    expect(audit.getHighestVulnerabilityLevel()).toEqual('high')
+  })
+
   test('does not find vulnerabilities', () => {
     mocked(child_process).spawnSync.mockImplementation((): any => {
       const stdout = fs.readFileSync(

@@ -4,7 +4,7 @@ import stripAnsi from 'strip-ansi'
 const SPAWN_PROCESS_BUFFER_SIZE = 10485760 // 10MiB
 
 export class Audit {
-  stdout = ''
+  stdout = '{}'
   private status: number | null = null
 
   public run(
@@ -19,9 +19,9 @@ export class Audit {
         auditOptions.push('--production')
       }
 
-      if (jsonFlag === 'true') {
-        auditOptions.push('--json')
-      }
+      // if (jsonFlag === 'true') {
+      auditOptions.push('--json')
+      // }
 
       const result: SpawnSyncReturns<string> = spawnSync('npm', auditOptions, {
         encoding: 'utf-8',
@@ -52,5 +52,35 @@ export class Audit {
 
   public strippedStdout(): string {
     return `\`\`\`\n${stripAnsi(this.stdout)}\n\`\`\``
+  }
+
+  public getHighestVulnerabilityLevel(): string {
+    const {metadata: {vulnerabilities}} = JSON.parse(this.stdout)
+    let highestVulnerabilitlevel = ''
+
+    if (vulnerabilities != null && typeof vulnerabilities === 'object') {
+
+
+      Object.entries<number>(vulnerabilities).forEach(([severity, amount]) => {
+        if(severity === 'critical' && amount > 0){
+          return highestVulnerabilitlevel = 'critical'
+        }
+        if(severity === 'high' && amount > 0){
+          return highestVulnerabilitlevel = 'high'
+        }
+        if(severity === 'moderate' && amount > 0){
+          return highestVulnerabilitlevel = 'moderate'
+        }
+        if(severity === 'low' && amount > 0){
+          return highestVulnerabilitlevel = 'low'
+        }
+        if(severity === 'info' && amount > 0){
+          return highestVulnerabilitlevel = 'info'
+        }
+      })
+
+    }
+    return highestVulnerabilitlevel
+
   }
 }

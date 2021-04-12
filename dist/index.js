@@ -553,7 +553,7 @@ const strip_ansi_1 = __importDefault(__webpack_require__(90));
 const SPAWN_PROCESS_BUFFER_SIZE = 10485760; // 10MiB
 class Audit {
     constructor() {
-        this.stdout = '';
+        this.stdout = '{}';
         this.status = null;
     }
     run(auditLevel, productionFlag, jsonFlag) {
@@ -562,9 +562,9 @@ class Audit {
             if (productionFlag === 'true') {
                 auditOptions.push('--production');
             }
-            if (jsonFlag === 'true') {
-                auditOptions.push('--json');
-            }
+            // if (jsonFlag === 'true') {
+            auditOptions.push('--json');
+            // }
             const result = child_process_1.spawnSync('npm', auditOptions, {
                 encoding: 'utf-8',
                 maxBuffer: SPAWN_PROCESS_BUFFER_SIZE
@@ -591,6 +591,27 @@ class Audit {
     }
     strippedStdout() {
         return `\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\``;
+    }
+    getHighestVulnerabilitlevel() {
+        const { metadata: { vulnerabilities } } = JSON.parse(this.stdout);
+        let highestVulnerabilitlevel = '';
+        if (vulnerabilities != null && typeof vulnerabilities === 'object') {
+            Object.entries(vulnerabilities).forEach(([severity, amount]) => {
+                if (severity === 'critical' && amount > 0) {
+                    highestVulnerabilitlevel = 'critical';
+                }
+                if (severity === 'high' && amount > 0) {
+                    highestVulnerabilitlevel = 'high';
+                }
+                if (severity === 'moderate' && amount > 0) {
+                    highestVulnerabilitlevel = 'moderate';
+                }
+                if (severity === 'low' && amount > 0) {
+                    highestVulnerabilitlevel = 'low';
+                }
+            });
+        }
+        return highestVulnerabilitlevel;
     }
 }
 exports.Audit = Audit;
@@ -1711,6 +1732,14 @@ function run() {
             if (!['true', 'false'].includes(jsonFlag)) {
                 throw new Error('Invalid input: json_flag');
             }
+            const addPrLabels = core.getInput('add_pr_labels', { required: false });
+            if (!['true', 'false'].includes(addPrLabels)) {
+                throw new Error('Invalid input: add_pr_labels');
+            }
+            const failOnVulnerabilityFound = core.getInput('fail_on_vulnerabilities_found', { required: false });
+            if (!['true', 'false'].includes(failOnVulnerabilityFound)) {
+                throw new Error('Invalid input: fail_on_vulnerabilities_found');
+            }
             // run `npm audit`
             const audit = new audit_1.Audit();
             audit.run(auditLevel, productionFlag, jsonFlag);
@@ -1726,7 +1755,16 @@ function run() {
                 });
                 if (ctx.event_name === 'pull_request') {
                     yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
-                    core.setFailed('This repo has some vulnerabilities');
+                    if (addPrLabels === 'true') {
+                        const highestVulnerabilitlevel = audit.getHighestVulnerabilitlevel();
+                        // add highest vulnerability level to PR as label
+                        if (!!highestVulnerabilitlevel) {
+                            octokit.issues.addLabels({ owner: github.context.repo.owner, repo: github.context.repo.repo, issue_number: ctx.event.number, labels: [highestVulnerabilitlevel] });
+                        }
+                    }
+                    if (failOnVulnerabilityFound === 'true') {
+                        core.setFailed('This repo has some vulnerabilities');
+                    }
                     return;
                 }
                 else {
@@ -1745,7 +1783,9 @@ function run() {
                         const { data: createdIssue } = yield octokit.issues.create(Object.assign(Object.assign({}, github.context.repo), option));
                         core.debug(`#${createdIssue.number}`);
                     }
-                    core.setFailed('This repo has some vulnerabilities');
+                    if (failOnVulnerabilityFound === 'true') {
+                        core.setFailed('This repo has some vulnerabilities');
+                    }
                 }
             }
         }
@@ -2728,7 +2768,7 @@ module.exports = require("assert");
 /***/ 361:
 /***/ (function(module) {
 
-module.exports = {"name":"axios","version":"0.21.1","description":"Promise based HTTP client for the browser and node.js","main":"index.js","scripts":{"test":"grunt test && bundlesize","start":"node ./sandbox/server.js","build":"NODE_ENV=production grunt build","preversion":"npm test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json","postversion":"git push && git push --tags","examples":"node ./examples/server.js","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","fix":"eslint --fix lib/**/*.js"},"repository":{"type":"git","url":"https://github.com/axios/axios.git"},"keywords":["xhr","http","ajax","promise","node"],"author":"Matt Zabriskie","license":"MIT","bugs":{"url":"https://github.com/axios/axios/issues"},"homepage":"https://github.com/axios/axios","devDependencies":{"bundlesize":"^0.17.0","coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.0.2","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^20.1.0","grunt-karma":"^2.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^1.0.18","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^1.3.0","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-firefox-launcher":"^1.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^1.2.0","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.7","karma-webpack":"^1.7.0","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^5.2.0","sinon":"^4.5.0","typescript":"^2.8.1","url-search-params":"^0.10.0","webpack":"^1.13.1","webpack-dev-server":"^1.14.1"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"jsdelivr":"dist/axios.min.js","unpkg":"dist/axios.min.js","typings":"./index.d.ts","dependencies":{"follow-redirects":"^1.10.0"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"_resolved":"https://registry.npmjs.org/axios/-/axios-0.21.1.tgz","_integrity":"sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==","_from":"axios@0.21.1"};
+module.exports = {"name":"axios","version":"0.21.1","description":"Promise based HTTP client for the browser and node.js","main":"index.js","scripts":{"test":"grunt test && bundlesize","start":"node ./sandbox/server.js","build":"NODE_ENV=production grunt build","preversion":"npm test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json","postversion":"git push && git push --tags","examples":"node ./examples/server.js","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","fix":"eslint --fix lib/**/*.js"},"repository":{"type":"git","url":"https://github.com/axios/axios.git"},"keywords":["xhr","http","ajax","promise","node"],"author":"Matt Zabriskie","license":"MIT","bugs":{"url":"https://github.com/axios/axios/issues"},"homepage":"https://github.com/axios/axios","devDependencies":{"bundlesize":"^0.17.0","coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.0.2","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^20.1.0","grunt-karma":"^2.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^1.0.18","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^1.3.0","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-firefox-launcher":"^1.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^1.2.0","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.7","karma-webpack":"^1.7.0","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^5.2.0","sinon":"^4.5.0","typescript":"^2.8.1","url-search-params":"^0.10.0","webpack":"^1.13.1","webpack-dev-server":"^1.14.1"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"jsdelivr":"dist/axios.min.js","unpkg":"dist/axios.min.js","typings":"./index.d.ts","dependencies":{"follow-redirects":"^1.10.0"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}]};
 
 /***/ }),
 

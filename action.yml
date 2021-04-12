@@ -10,10 +10,6 @@ inputs:
     description: 'Run npm audit with --production'
     default: 'false'
     required: false
-  json_flag:
-    description: 'Run npm audit with --json'
-    default: 'false'
-    required: false
   github_context:
     description: 'The `github` context'
     default: ${{ toJson(github) }}
@@ -22,10 +18,16 @@ inputs:
     description: 'GitHub access token used to create an issue'
     required: true
   issue_assignees:
-    description: 'Issue assignees (separated by commma)'
+    description: 'Issue assignees (separated by comma)'
     required: false
   issue_labels:
-    description: 'Issue assignees (separated by commma)'
+    description: 'Issue labels (separated by comma)'
+    required: false
+  add_pr_labels:
+    description: 'add labels to the PR indicating the issue severity based on audit results'
+    required: false
+  fail_on_vulnerabilities_found:
+    description: 'If the action should fail when vulnerabilities are found'
     required: false
   issue_title:
     description: 'Issue title'

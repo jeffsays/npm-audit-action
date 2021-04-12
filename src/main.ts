@@ -35,6 +35,16 @@ export async function run(): Promise<void> {
       throw new Error('Invalid input: json_flag')
     }
 
+    const addPrLabels = core.getInput('add_pr_labels', {required: false})
+    if (!['true', 'false'].includes(addPrLabels)) {
+      throw new Error('Invalid input: add_pr_labels')
+    }
+
+    const failOnVulnerabilityFound = core.getInput('fail_on_vulnerabilities_found', {required: false})
+    if (!['true', 'false'].includes(failOnVulnerabilityFound)) {
+      throw new Error('Invalid input: fail_on_vulnerabilities_found')
+    }
+
     // run `npm audit`
     const audit = new Audit()
     audit.run(auditLevel, productionFlag, jsonFlag)
@@ -59,7 +69,17 @@ export async function run(): Promise<void> {
           ctx.event.number,
           audit.strippedStdout()
         )
-        core.setFailed('This repo has some vulnerabilities')
+
+        if(addPrLabels === 'true'){
+          const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel()
+          // add highest vulnerability level to PR as label
+          octokit.issues.addLabels({owner: github.context.repo.owner,repo:github.context.repo.repo,issue_number:ctx.event.number, labels: [highestVulnerabilitlevel]})
+        }
+
+        if(failOnVulnerabilityFound === 'true'){
+          core.setFailed('This repo has some vulnerabilities')
+        }
+
         return
       } else {
         core.debug('open an issue')
@@ -89,8 +109,9 @@ export async function run(): Promise<void> {
           })
           core.debug(`#${createdIssue.number}`)
         }
-        core.setFailed('This repo has some vulnerabilities')
-      }
+        if(failOnVulnerabilityFound === 'true'){
+          core.setFailed('This repo has some vulnerabilities')
+        }      }
     }
   } catch (error) {
     core.setFailed(error.message)
