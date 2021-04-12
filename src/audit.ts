@@ -51,7 +51,7 @@ export class Audit {
   }
 
   public strippedStdout(): string {
-    return `\`\`\`\n${stripAnsi(this.stdout)}\n\`\`\``
+    return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n\`\`\`\n${stripAnsi(this.stdout)}\n\`\`\``
   }
 
   public getHighestVulnerabilityLevel(): string {
@@ -63,19 +63,19 @@ export class Audit {
 
       Object.entries<number>(vulnerabilities).forEach(([severity, amount]) => {
         if(severity === 'critical' && amount > 0){
-          return highestVulnerabilitlevel = 'critical'
+          return highestVulnerabilitlevel = 'Contains critical vulnerabilities'
         }
         if(severity === 'high' && amount > 0){
-          return highestVulnerabilitlevel = 'high'
+          return highestVulnerabilitlevel = 'Contains high vulnerabilities'
         }
         if(severity === 'moderate' && amount > 0){
-          return highestVulnerabilitlevel = 'moderate'
+          return highestVulnerabilitlevel = 'Contains moderate vulnerabilities'
         }
         if(severity === 'low' && amount > 0){
-          return highestVulnerabilitlevel = 'low'
+          return highestVulnerabilitlevel = 'Contains low vulnerabilities'
         }
         if(severity === 'info' && amount > 0){
-          return highestVulnerabilitlevel = 'info'
+          return highestVulnerabilitlevel = 'Contains info vulnerabilities'
         }
       })
 

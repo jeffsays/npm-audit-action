@@ -590,7 +590,7 @@ class Audit {
         return this.status === 1;
     }
     strippedStdout() {
-        return `\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\``;
+        return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\``;
     }
     getHighestVulnerabilityLevel() {
         const { metadata: { vulnerabilities } } = JSON.parse(this.stdout);
@@ -598,19 +598,19 @@ class Audit {
         if (vulnerabilities != null && typeof vulnerabilities === 'object') {
             Object.entries(vulnerabilities).forEach(([severity, amount]) => {
                 if (severity === 'critical' && amount > 0) {
-                    return highestVulnerabilitlevel = 'critical';
+                    return highestVulnerabilitlevel = 'Contains critical vulnerabilities';
                 }
                 if (severity === 'high' && amount > 0) {
-                    return highestVulnerabilitlevel = 'high';
+                    return highestVulnerabilitlevel = 'Contains high vulnerabilities';
                 }
                 if (severity === 'moderate' && amount > 0) {
-                    return highestVulnerabilitlevel = 'moderate';
+                    return highestVulnerabilitlevel = 'Contains moderate vulnerabilities';
                 }
                 if (severity === 'low' && amount > 0) {
-                    return highestVulnerabilitlevel = 'low';
+                    return highestVulnerabilitlevel = 'Contains low vulnerabilities';
                 }
                 if (severity === 'info' && amount > 0) {
-                    return highestVulnerabilitlevel = 'info';
+                    return highestVulnerabilitlevel = 'Contains info vulnerabilities';
                 }
             });
         }
