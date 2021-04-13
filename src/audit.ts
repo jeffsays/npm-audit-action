@@ -58,9 +58,9 @@ export class Audit {
   }
 
   public strippedStdout(): string {
-    return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\`\`\`\n${stripAnsi(
+    return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\n\`\`\`\n${stripAnsi(
       this.stdout
-    )}\n\`\`\`</details>`
+    )}\n\`\`\`\n</details>`
   }
 
   public getHighestVulnerabilityLevel(): string {
