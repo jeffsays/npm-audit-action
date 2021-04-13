@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {Octokit} from '@octokit/rest'
-import {Audit} from './audit'
+import {Audit, VULNERABILITIY_TYPE} from './audit'
 import {IssueOption} from './interface'
 import * as issue from './issue'
 import * as pr from './pr'
@@ -40,7 +40,10 @@ export async function run(): Promise<void> {
       throw new Error('Invalid input: add_pr_labels')
     }
 
-    const failOnVulnerabilityFound = core.getInput('fail_on_vulnerabilities_found', {required: false})
+    const failOnVulnerabilityFound = core.getInput(
+      'fail_on_vulnerabilities_found',
+      {required: false}
+    )
     if (!['true', 'false'].includes(failOnVulnerabilityFound)) {
       throw new Error('Invalid input: fail_on_vulnerabilities_found')
     }
@@ -70,13 +73,27 @@ export async function run(): Promise<void> {
           audit.strippedStdout()
         )
 
-        if(addPrLabels === 'true'){
+        if (addPrLabels === 'true') {
           const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel()
-          // add highest vulnerability level to PR as label
-          octokit.issues.addLabels({owner: github.context.repo.owner,repo:github.context.repo.repo,issue_number:ctx.event.number, labels: [highestVulnerabilitlevel]})
+
+          const labels = await octokit.issues.listLabelsOnIssue({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: ctx.event.number
+          })
+          const filteredLabelNames = labels.data
+            .filter(label => !Object.values(VULNERABILITIY_TYPE).includes(label.name as VULNERABILITIY_TYPE))
+            .map(label => label.name)
+
+          octokit.issues.addLabels({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: ctx.event.number,
+            labels: [...filteredLabelNames, highestVulnerabilitlevel]
+          })
         }
 
-        if(failOnVulnerabilityFound === 'true'){
+        if (failOnVulnerabilityFound === 'true') {
           core.setFailed('This repo has some vulnerabilities')
         }
 
@@ -109,9 +126,10 @@ export async function run(): Promise<void> {
           })
           core.debug(`#${createdIssue.number}`)
         }
-        if(failOnVulnerabilityFound === 'true'){
+        if (failOnVulnerabilityFound === 'true') {
           core.setFailed('This repo has some vulnerabilities')
-        }      }
+        }
+      }
     }
   } catch (error) {
     core.setFailed(error.message)

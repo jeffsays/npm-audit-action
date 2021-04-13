@@ -1,8 +1,15 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {spawnSync, SpawnSyncReturns} from 'child_process'
 import stripAnsi from 'strip-ansi'
 
 const SPAWN_PROCESS_BUFFER_SIZE = 10485760 // 10MiB
-
+export enum VULNERABILITIY_TYPE {
+  INFO = 'Contains info severity vulnerabilities',
+  LOW = 'Contains low severity vulnerabilities',
+  MODERATE = 'Contains moderate severity vulnerabilities',
+  HIGH = 'Contains high severity vulnerabilities',
+  CRITICAL = 'Contains critical severity vulnerabilities'
+}
 export class Audit {
   stdout = '{}'
   private status: number | null = null
@@ -51,36 +58,36 @@ export class Audit {
   }
 
   public strippedStdout(): string {
-    return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n\`\`\`\n${stripAnsi(this.stdout)}\n\`\`\``
+    return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\`\`\`\n${stripAnsi(
+      this.stdout
+    )}\n\`\`\`</details>`
   }
 
   public getHighestVulnerabilityLevel(): string {
-    const {metadata: {vulnerabilities}} = JSON.parse(this.stdout)
+    const {
+      metadata: {vulnerabilities}
+    } = JSON.parse(this.stdout)
     let highestVulnerabilitlevel = ''
 
     if (vulnerabilities != null && typeof vulnerabilities === 'object') {
-
-
       Object.entries<number>(vulnerabilities).forEach(([severity, amount]) => {
-        if(severity === 'critical' && amount > 0){
-          return highestVulnerabilitlevel = 'Contains critical severity vulnerabilities'
+        if (severity === 'critical' && amount > 0) {
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.CRITICAL)
         }
-        if(severity === 'high' && amount > 0){
-          return highestVulnerabilitlevel = 'Contains high severity vulnerabilities'
+        if (severity === 'high' && amount > 0) {
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.HIGH)
         }
-        if(severity === 'moderate' && amount > 0){
-          return highestVulnerabilitlevel = 'Contains moderate severity vulnerabilities'
+        if (severity === 'moderate' && amount > 0) {
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.MODERATE)
         }
-        if(severity === 'low' && amount > 0){
-          return highestVulnerabilitlevel = 'Contains low severity vulnerabilities'
+        if (severity === 'low' && amount > 0) {
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.LOW)
         }
-        if(severity === 'info' && amount > 0){
-          return highestVulnerabilitlevel = 'Contains info severity vulnerabilities'
+        if (severity === 'info' && amount > 0) {
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.INFO)
         }
       })
-
     }
     return highestVulnerabilitlevel
-
   }
 }

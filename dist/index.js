@@ -547,10 +547,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Audit = void 0;
+exports.Audit = exports.VULNERABILITIY_TYPE = void 0;
+/* eslint-disable @typescript-eslint/naming-convention */
 const child_process_1 = __webpack_require__(129);
 const strip_ansi_1 = __importDefault(__webpack_require__(90));
 const SPAWN_PROCESS_BUFFER_SIZE = 10485760; // 10MiB
+var VULNERABILITIY_TYPE;
+(function (VULNERABILITIY_TYPE) {
+    VULNERABILITIY_TYPE["INFO"] = "Contains info severity vulnerabilities";
+    VULNERABILITIY_TYPE["LOW"] = "Contains low severity vulnerabilities";
+    VULNERABILITIY_TYPE["MODERATE"] = "Contains moderate severity vulnerabilities";
+    VULNERABILITIY_TYPE["HIGH"] = "Contains high severity vulnerabilities";
+    VULNERABILITIY_TYPE["CRITICAL"] = "Contains critical severity vulnerabilities";
+})(VULNERABILITIY_TYPE = exports.VULNERABILITIY_TYPE || (exports.VULNERABILITIY_TYPE = {}));
 class Audit {
     constructor() {
         this.stdout = '{}';
@@ -590,7 +599,7 @@ class Audit {
         return this.status === 1;
     }
     strippedStdout() {
-        return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\``;
+        return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\`</details>`;
     }
     getHighestVulnerabilityLevel() {
         const { metadata: { vulnerabilities } } = JSON.parse(this.stdout);
@@ -598,19 +607,19 @@ class Audit {
         if (vulnerabilities != null && typeof vulnerabilities === 'object') {
             Object.entries(vulnerabilities).forEach(([severity, amount]) => {
                 if (severity === 'critical' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains critical severity vulnerabilities';
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.CRITICAL);
                 }
                 if (severity === 'high' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains high severity vulnerabilities';
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.HIGH);
                 }
                 if (severity === 'moderate' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains moderate severity vulnerabilities';
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.MODERATE);
                 }
                 if (severity === 'low' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains low severity vulnerabilities';
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.LOW);
                 }
                 if (severity === 'info' && amount > 0) {
-                    return highestVulnerabilitlevel = 'Contains info severity vulnerabilities';
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.INFO);
                 }
             });
         }
@@ -1760,8 +1769,20 @@ function run() {
                     yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
                     if (addPrLabels === 'true') {
                         const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel();
-                        // add highest vulnerability level to PR as label
-                        octokit.issues.addLabels({ owner: github.context.repo.owner, repo: github.context.repo.repo, issue_number: ctx.event.number, labels: [highestVulnerabilitlevel] });
+                        const labels = yield octokit.issues.listLabelsOnIssue({
+                            owner: github.context.repo.owner,
+                            repo: github.context.repo.repo,
+                            issue_number: ctx.event.number
+                        });
+                        const filteredLabelNames = labels.data
+                            .filter(label => !Object.values(audit_1.VULNERABILITIY_TYPE).includes(label.name))
+                            .map(label => label.name);
+                        octokit.issues.addLabels({
+                            owner: github.context.repo.owner,
+                            repo: github.context.repo.repo,
+                            issue_number: ctx.event.number,
+                            labels: [...filteredLabelNames, highestVulnerabilitlevel]
+                        });
                     }
                     if (failOnVulnerabilityFound === 'true') {
                         core.setFailed('This repo has some vulnerabilities');
