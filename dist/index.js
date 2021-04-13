@@ -1777,7 +1777,7 @@ function run() {
                         const filteredLabelNames = labels.data
                             .filter(label => !Object.values(audit_1.VULNERABILITIY_TYPE).includes(label.name))
                             .map(label => label.name);
-                        octokit.issues.addLabels({
+                        octokit.issues.setLabels({
                             owner: github.context.repo.owner,
                             repo: github.context.repo.repo,
                             issue_number: ctx.event.number,

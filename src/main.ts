@@ -85,7 +85,7 @@ export async function run(): Promise<void> {
             .filter(label => !Object.values(VULNERABILITIY_TYPE).includes(label.name as VULNERABILITIY_TYPE))
             .map(label => label.name)
 
-          octokit.issues.addLabels({
+          octokit.issues.setLabels({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             issue_number: ctx.event.number,
