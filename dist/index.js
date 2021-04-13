@@ -599,7 +599,7 @@ class Audit {
         return this.status === 1;
     }
     strippedStdout() {
-        return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\`</details>`;
+        return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\n\n\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\`\n\n</details>`;
     }
     getHighestVulnerabilityLevel() {
         const { metadata: { vulnerabilities } } = JSON.parse(this.stdout);
