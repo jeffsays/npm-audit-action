@@ -54,15 +54,17 @@ export async function run(): Promise<void> {
     core.info(audit.stdout)
     core.setOutput('npm_audit', audit.stdout)
 
-    if (audit.foundVulnerability()) {
-      // vulnerabilities are found
-
       // get GitHub information
       const ctx = JSON.parse(core.getInput('github_context'))
       const token: string = core.getInput('github_token', {required: true})
       const octokit = new Octokit({
         auth: token
       })
+
+    if (audit.foundVulnerability()) {
+      // vulnerabilities are found
+
+
 
       if (ctx.event_name === 'pull_request') {
         await pr.createComment(
@@ -130,6 +132,24 @@ export async function run(): Promise<void> {
           core.setFailed('This repo has some vulnerabilities')
         }
       }
+    } else {
+      // remove all vulnerability labels once the PR is fixed
+      const labels = await octokit.issues.listLabelsOnIssue({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: ctx.event.number
+      })
+
+      const filteredLabelNames = labels.data
+        .filter(label => !Object.values(VULNERABILITIY_TYPE).includes(label.name as VULNERABILITIY_TYPE))
+        .map(label => label.name)
+
+      octokit.issues.setLabels({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: ctx.event.number,
+        labels: [...filteredLabelNames]
+      })
     }
   } catch (error) {
     core.setFailed(error.message)

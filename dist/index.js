@@ -1757,14 +1757,14 @@ function run() {
             audit.run(auditLevel, productionFlag, 'true');
             core.info(audit.stdout);
             core.setOutput('npm_audit', audit.stdout);
+            // get GitHub information
+            const ctx = JSON.parse(core.getInput('github_context'));
+            const token = core.getInput('github_token', { required: true });
+            const octokit = new rest_1.Octokit({
+                auth: token
+            });
             if (audit.foundVulnerability()) {
                 // vulnerabilities are found
-                // get GitHub information
-                const ctx = JSON.parse(core.getInput('github_context'));
-                const token = core.getInput('github_token', { required: true });
-                const octokit = new rest_1.Octokit({
-                    auth: token
-                });
                 if (ctx.event_name === 'pull_request') {
                     yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
                     if (addPrLabels === 'true') {
@@ -1809,6 +1809,23 @@ function run() {
                         core.setFailed('This repo has some vulnerabilities');
                     }
                 }
+            }
+            else {
+                // remove all vulnerability labels once the PR is fixed
+                const labels = yield octokit.issues.listLabelsOnIssue({
+                    owner: github.context.repo.owner,
+                    repo: github.context.repo.repo,
+                    issue_number: ctx.event.number
+                });
+                const filteredLabelNames = labels.data
+                    .filter(label => !Object.values(audit_1.VULNERABILITIY_TYPE).includes(label.name))
+                    .map(label => label.name);
+                octokit.issues.setLabels({
+                    owner: github.context.repo.owner,
+                    repo: github.context.repo.repo,
+                    issue_number: ctx.event.number,
+                    labels: [...filteredLabelNames]
+                });
             }
         }
         catch (error) {
