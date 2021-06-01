@@ -30,10 +30,10 @@ export async function run(): Promise<void> {
       throw new Error('Invalid input: production_flag')
     }
 
-    // const jsonFlag = core.getInput('json_flag', {required: false})
-    // if (!['true', 'false'].includes(jsonFlag)) {
-    //   throw new Error('Invalid input: json_flag')
-    // }
+    const jsonFlag = core.getInput('json_flag', {required: false})
+    if (!['true', 'false'].includes(jsonFlag)) {
+      throw new Error('Invalid input: json_flag')
+    }
 
     const addPrLabels = core.getInput('add_pr_labels', {required: false})
     if (!['true', 'false'].includes(addPrLabels)) {
@@ -50,21 +50,19 @@ export async function run(): Promise<void> {
 
     // run `npm audit`
     const audit = new Audit()
-    audit.run(auditLevel, productionFlag, 'true')
+    audit.run(auditLevel, productionFlag, jsonFlag)
     core.info(audit.stdout)
     core.setOutput('npm_audit', audit.stdout)
 
-      // get GitHub information
-      const ctx = JSON.parse(core.getInput('github_context'))
-      const token: string = core.getInput('github_token', {required: true})
-      const octokit = new Octokit({
-        auth: token
-      })
+    // get GitHub information
+    const ctx = JSON.parse(core.getInput('github_context'))
+    const token: string = core.getInput('github_token', {required: true})
+    const octokit = new Octokit({
+      auth: token
+    })
 
     if (audit.foundVulnerability()) {
       // vulnerabilities are found
-
-
 
       if (ctx.event_name === 'pull_request') {
         await pr.createComment(
@@ -76,7 +74,7 @@ export async function run(): Promise<void> {
         )
 
         if (addPrLabels === 'true') {
-          const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel()
+          const highestVulnerabilitylevel = audit.getHighestVulnerabilityLevel()
 
           const labels = await octokit.issues.listLabelsOnIssue({
             owner: github.context.repo.owner,
@@ -84,14 +82,19 @@ export async function run(): Promise<void> {
             issue_number: ctx.event.number
           })
           const filteredLabelNames = labels.data
-            .filter(label => !Object.values(VULNERABILITIY_TYPE).includes(label.name as VULNERABILITIY_TYPE))
+            .filter(
+              label =>
+                !Object.values(VULNERABILITIY_TYPE).includes(
+                  label.name as VULNERABILITIY_TYPE
+                )
+            )
             .map(label => label.name)
 
           octokit.issues.setLabels({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             issue_number: ctx.event.number,
-            labels: [...filteredLabelNames, highestVulnerabilitlevel]
+            labels: [...filteredLabelNames, highestVulnerabilitylevel]
           })
         }
 
@@ -141,7 +144,12 @@ export async function run(): Promise<void> {
       })
 
       const filteredLabelNames = labels.data
-        .filter(label => !Object.values(VULNERABILITIY_TYPE).includes(label.name as VULNERABILITIY_TYPE))
+        .filter(
+          label =>
+            !Object.values(VULNERABILITIY_TYPE).includes(
+              label.name as VULNERABILITIY_TYPE
+            )
+        )
         .map(label => label.name)
 
       octokit.issues.setLabels({

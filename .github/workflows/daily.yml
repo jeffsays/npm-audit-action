@@ -12,9 +12,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: install dependencies
         run: npm ci
-      - uses: oke-py/npm-audit-action@v1.7.1
+      - uses: jeffsays/npm-audit-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          issue_assignees: oke-py
-          issue_labels: vulnerability
+          issue_assignees: jeffsays
+          issue_labels: dependencies,vulnerability
           dedupe_issues: true

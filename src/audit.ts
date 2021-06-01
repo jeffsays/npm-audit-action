@@ -58,7 +58,7 @@ export class Audit {
   }
 
   public strippedStdout(): string {
-    return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\n\n\`\`\`\n${stripAnsi(
+    return `# Warning: This PR contains vulnerabilites\n### Please check the output below and try to update the dependencies if possible\n<details><summary>Audit output</summary>\n\n\`\`\`\n${stripAnsi(
       this.stdout
     )}\n\`\`\`\n\n</details>`
   }
@@ -67,27 +67,27 @@ export class Audit {
     const {
       metadata: {vulnerabilities}
     } = JSON.parse(this.stdout)
-    let highestVulnerabilitlevel = ''
+    let highestVulnerabilitylevel = ''
 
     if (vulnerabilities != null && typeof vulnerabilities === 'object') {
       Object.entries<number>(vulnerabilities).forEach(([severity, amount]) => {
         if (severity === 'critical' && amount > 0) {
-          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.CRITICAL)
+          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.CRITICAL)
         }
         if (severity === 'high' && amount > 0) {
-          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.HIGH)
+          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.HIGH)
         }
         if (severity === 'moderate' && amount > 0) {
-          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.MODERATE)
+          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.MODERATE)
         }
         if (severity === 'low' && amount > 0) {
-          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.LOW)
+          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.LOW)
         }
         if (severity === 'info' && amount > 0) {
-          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.INFO)
+          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.INFO)
         }
       })
     }
-    return highestVulnerabilitlevel
+    return highestVulnerabilitylevel
   }
 }

@@ -599,31 +599,31 @@ class Audit {
         return this.status === 1;
     }
     strippedStdout() {
-        return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\n\n\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\`\n\n</details>`;
+        return `# Warning: This PR contains vulnerabilites\n### Please check the output below and try to update the dependencies if possible\n<details><summary>Audit output</summary>\n\n\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\`\n\n</details>`;
     }
     getHighestVulnerabilityLevel() {
         const { metadata: { vulnerabilities } } = JSON.parse(this.stdout);
-        let highestVulnerabilitlevel = '';
+        let highestVulnerabilitylevel = '';
         if (vulnerabilities != null && typeof vulnerabilities === 'object') {
             Object.entries(vulnerabilities).forEach(([severity, amount]) => {
                 if (severity === 'critical' && amount > 0) {
-                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.CRITICAL);
+                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.CRITICAL);
                 }
                 if (severity === 'high' && amount > 0) {
-                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.HIGH);
+                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.HIGH);
                 }
                 if (severity === 'moderate' && amount > 0) {
-                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.MODERATE);
+                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.MODERATE);
                 }
                 if (severity === 'low' && amount > 0) {
-                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.LOW);
+                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.LOW);
                 }
                 if (severity === 'info' && amount > 0) {
-                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.INFO);
+                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.INFO);
                 }
             });
         }
-        return highestVulnerabilitlevel;
+        return highestVulnerabilitylevel;
     }
 }
 exports.Audit = Audit;
@@ -1740,10 +1740,10 @@ function run() {
             if (!['true', 'false'].includes(productionFlag)) {
                 throw new Error('Invalid input: production_flag');
             }
-            // const jsonFlag = core.getInput('json_flag', {required: false})
-            // if (!['true', 'false'].includes(jsonFlag)) {
-            //   throw new Error('Invalid input: json_flag')
-            // }
+            const jsonFlag = core.getInput('json_flag', { required: false });
+            if (!['true', 'false'].includes(jsonFlag)) {
+                throw new Error('Invalid input: json_flag');
+            }
             const addPrLabels = core.getInput('add_pr_labels', { required: false });
             if (!['true', 'false'].includes(addPrLabels)) {
                 throw new Error('Invalid input: add_pr_labels');
@@ -1754,7 +1754,7 @@ function run() {
             }
             // run `npm audit`
             const audit = new audit_1.Audit();
-            audit.run(auditLevel, productionFlag, 'true');
+            audit.run(auditLevel, productionFlag, jsonFlag);
             core.info(audit.stdout);
             core.setOutput('npm_audit', audit.stdout);
             // get GitHub information
@@ -1768,7 +1768,7 @@ function run() {
                 if (ctx.event_name === 'pull_request') {
                     yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
                     if (addPrLabels === 'true') {
-                        const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel();
+                        const highestVulnerabilitylevel = audit.getHighestVulnerabilityLevel();
                         const labels = yield octokit.issues.listLabelsOnIssue({
                             owner: github.context.repo.owner,
                             repo: github.context.repo.repo,
@@ -1781,7 +1781,7 @@ function run() {
                             owner: github.context.repo.owner,
                             repo: github.context.repo.repo,
                             issue_number: ctx.event.number,
-                            labels: [...filteredLabelNames, highestVulnerabilitlevel]
+                            labels: [...filteredLabelNames, highestVulnerabilitylevel]
                         });
                     }
                     if (failOnVulnerabilityFound === 'true') {
@@ -2807,7 +2807,7 @@ module.exports = require("assert");
 /***/ 361:
 /***/ (function(module) {
 
-module.exports = {"name":"axios","version":"0.21.1","description":"Promise based HTTP client for the browser and node.js","main":"index.js","scripts":{"test":"grunt test && bundlesize","start":"node ./sandbox/server.js","build":"NODE_ENV=production grunt build","preversion":"npm test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json","postversion":"git push && git push --tags","examples":"node ./examples/server.js","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","fix":"eslint --fix lib/**/*.js"},"repository":{"type":"git","url":"https://github.com/axios/axios.git"},"keywords":["xhr","http","ajax","promise","node"],"author":"Matt Zabriskie","license":"MIT","bugs":{"url":"https://github.com/axios/axios/issues"},"homepage":"https://github.com/axios/axios","devDependencies":{"bundlesize":"^0.17.0","coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.0.2","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^20.1.0","grunt-karma":"^2.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^1.0.18","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^1.3.0","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-firefox-launcher":"^1.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^1.2.0","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.7","karma-webpack":"^1.7.0","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^5.2.0","sinon":"^4.5.0","typescript":"^2.8.1","url-search-params":"^0.10.0","webpack":"^1.13.1","webpack-dev-server":"^1.14.1"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"jsdelivr":"dist/axios.min.js","unpkg":"dist/axios.min.js","typings":"./index.d.ts","dependencies":{"follow-redirects":"^1.10.0"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}]};
+module.exports = {"_args":[["axios@0.21.1","/Users/jeffbeck/WebstormProjects/npm-audit-action"]],"_from":"axios@0.21.1","_id":"axios@0.21.1","_inBundle":false,"_integrity":"sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==","_location":"/axios","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"axios@0.21.1","name":"axios","escapedName":"axios","rawSpec":"0.21.1","saveSpec":null,"fetchSpec":"0.21.1"},"_requiredBy":["/"],"_resolved":"https://registry.npmjs.org/axios/-/axios-0.21.1.tgz","_spec":"0.21.1","_where":"/Users/jeffbeck/WebstormProjects/npm-audit-action","author":{"name":"Matt Zabriskie"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"bugs":{"url":"https://github.com/axios/axios/issues"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"dependencies":{"follow-redirects":"^1.10.0"},"description":"Promise based HTTP client for the browser and node.js","devDependencies":{"bundlesize":"^0.17.0","coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.0.2","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^20.1.0","grunt-karma":"^2.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^1.0.18","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^1.3.0","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-firefox-launcher":"^1.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^1.2.0","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.7","karma-webpack":"^1.7.0","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^5.2.0","sinon":"^4.5.0","typescript":"^2.8.1","url-search-params":"^0.10.0","webpack":"^1.13.1","webpack-dev-server":"^1.14.1"},"homepage":"https://github.com/axios/axios","jsdelivr":"dist/axios.min.js","keywords":["xhr","http","ajax","promise","node"],"license":"MIT","main":"index.js","name":"axios","repository":{"type":"git","url":"git+https://github.com/axios/axios.git"},"scripts":{"build":"NODE_ENV=production grunt build","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","examples":"node ./examples/server.js","fix":"eslint --fix lib/**/*.js","postversion":"git push && git push --tags","preversion":"npm test","start":"node ./sandbox/server.js","test":"grunt test && bundlesize","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json"},"typings":"./index.d.ts","unpkg":"dist/axios.min.js","version":"0.21.1"};
 
 /***/ }),
 

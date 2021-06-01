@@ -24,6 +24,7 @@ If vulnerabilities are found by `npm audit`, Action triggered by push, schedule 
 |:--:|:--:|:--:|:--|
 |audit_level|false|low|The value of `--audit-level` flag|
 |production_flag|false|false|Runnning `npm audit` with `--production`|
+|json_flag|false|false|Runnning npm audit with --json|
 |issue_assignees|false|N/A|Issue assignees (separated by commma)|
 |issue_labels|false|N/A|Issue labels (separated by commma)|
 |issue_title|false|npm audit found vulnerabilities|Issue title|
@@ -62,7 +63,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: install dependencies
         run: npm ci
-      - uses: oke-py/npm-audit-action@v1.7.1
+      - uses: jeffsays/npm-audit-action@v1.9.0
         with:
           audit_level: moderate
           github_token: ${{ secrets.GITHUB_TOKEN }}
