@@ -599,7 +599,7 @@ class Audit {
         return this.status === 1;
     }
     strippedStdout() {
-        return `# Warning: This PR contains vulnerabilites\n### Please check the output of \`npm audit\` and try to update the dependencies if possible\n<details><summary>Audit JSON output</summary>\n\n\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\`\n\n</details>`;
+        return `# Warning: This PR contains vulnerabilites\n### Please check the output below and try to update the dependencies if possible\n<details><summary>Audit output</summary>\n\n\`\`\`\n${strip_ansi_1.default(this.stdout)}\n\`\`\`\n\n</details>`;
     }
     getHighestVulnerabilityLevel() {
         const { metadata: { vulnerabilities } } = JSON.parse(this.stdout);
@@ -1752,9 +1752,13 @@ function run() {
             if (!['true', 'false'].includes(failOnVulnerabilityFound)) {
                 throw new Error('Invalid input: fail_on_vulnerabilities_found');
             }
+            const createPrComment = core.getInput('create_pr_comment', { required: false });
+            if (!['true', 'false'].includes(createPrComment)) {
+                throw new Error('Invalid input: create_pr_comment');
+            }
             // run `npm audit`
             const audit = new audit_1.Audit();
-            audit.run(auditLevel, productionFlag, 'true');
+            audit.run(auditLevel, productionFlag, 'false');
             core.info(audit.stdout);
             core.setOutput('npm_audit', audit.stdout);
             // get GitHub information
@@ -1766,7 +1770,9 @@ function run() {
             if (audit.foundVulnerability()) {
                 // vulnerabilities are found
                 if (ctx.event_name === 'pull_request') {
-                    yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
+                    if (createPrComment === 'true') {
+                        yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
+                    }
                     if (addPrLabels === 'true') {
                         const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel();
                         const labels = yield octokit.issues.listLabelsOnIssue({

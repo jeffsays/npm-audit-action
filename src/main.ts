@@ -48,7 +48,9 @@ export async function run(): Promise<void> {
       throw new Error('Invalid input: fail_on_vulnerabilities_found')
     }
 
-    const createPrComment = core.getInput('create_pr_comment', {required: false})
+    const createPrComment = core.getInput('create_pr_comment', {
+      required: false
+    })
     if (!['true', 'false'].includes(createPrComment)) {
       throw new Error('Invalid input: create_pr_comment')
     }
@@ -59,17 +61,15 @@ export async function run(): Promise<void> {
     core.info(audit.stdout)
     core.setOutput('npm_audit', audit.stdout)
 
-      // get GitHub information
-      const ctx = JSON.parse(core.getInput('github_context'))
-      const token: string = core.getInput('github_token', {required: true})
-      const octokit = new Octokit({
-        auth: token
-      })
+    // get GitHub information
+    const ctx = JSON.parse(core.getInput('github_context'))
+    const token: string = core.getInput('github_token', {required: true})
+    const octokit = new Octokit({
+      auth: token
+    })
 
     if (audit.foundVulnerability()) {
       // vulnerabilities are found
-
-
 
       if (ctx.event_name === 'pull_request') {
         if (createPrComment === 'true') {
@@ -91,7 +91,12 @@ export async function run(): Promise<void> {
             issue_number: ctx.event.number
           })
           const filteredLabelNames = labels.data
-            .filter(label => !Object.values(VULNERABILITIY_TYPE).includes(label.name as VULNERABILITIY_TYPE))
+            .filter(
+              label =>
+                !Object.values(VULNERABILITIY_TYPE).includes(
+                  label.name as VULNERABILITIY_TYPE
+                )
+            )
             .map(label => label.name)
 
           octokit.issues.setLabels({
@@ -148,7 +153,12 @@ export async function run(): Promise<void> {
       })
 
       const filteredLabelNames = labels.data
-        .filter(label => !Object.values(VULNERABILITIY_TYPE).includes(label.name as VULNERABILITIY_TYPE))
+        .filter(
+          label =>
+            !Object.values(VULNERABILITIY_TYPE).includes(
+              label.name as VULNERABILITIY_TYPE
+            )
+        )
         .map(label => label.name)
 
       octokit.issues.setLabels({

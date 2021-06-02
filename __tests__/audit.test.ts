@@ -94,7 +94,9 @@ describe('run', () => {
     })
 
     audit.run('low', 'false', 'true')
-    expect(audit.getHighestVulnerabilityLevel()).toEqual('Contains high severity vulnerabilities')
+    expect(audit.getHighestVulnerabilityLevel()).toEqual(
+      'Contains high severity vulnerabilities'
+    )
   })
 
   test('does not find vulnerabilities', () => {
