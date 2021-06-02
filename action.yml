@@ -42,10 +42,6 @@ inputs:
     description: 'Flag to de-dupe against open issues'
     default: 'false'
     required: false
-  create_pr_comment:
-    description: 'Whether or not to Create a PR comment'
-    default: 'false'
-    required: false
 outputs:
   npm_audit:
     description: 'The output of the npm audit report in a text format'

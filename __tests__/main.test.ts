@@ -19,7 +19,6 @@ describe('run', () => {
     process.env.INPUT_ADD_PR_LABELS = 'false'
     process.env.INPUT_FAIL_ON_VULNERABILITIES_FOUND = 'false'
     process.env.INPUT_JSON_FLAG = 'false'
-    process.env.INPUT_CREATE_PR_COMMENT = 'false'
     process.env.INPUT_GITHUB_CONTEXT =
       '{ "event_name": "pull_request", "event": { "number": 100} }'
     process.env.INPUT_GITHUB_TOKEN = '***'
