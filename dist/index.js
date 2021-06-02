@@ -1752,6 +1752,10 @@ function run() {
             if (!['true', 'false'].includes(failOnVulnerabilityFound)) {
                 throw new Error('Invalid input: fail_on_vulnerabilities_found');
             }
+            const createComment = core.getInput('create_comment', { required: false });
+            if (!['true', 'false'].includes(createComment)) {
+                throw new Error('Invalid input: create_comment');
+            }
             // run `npm audit`
             const audit = new audit_1.Audit();
             audit.run(auditLevel, productionFlag, jsonFlag);
@@ -1766,7 +1770,9 @@ function run() {
             if (audit.foundVulnerability()) {
                 // vulnerabilities are found
                 if (ctx.event_name === 'pull_request') {
-                    yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
+                    if (createComment === 'true') {
+                        yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
+                    }
                     if (addPrLabels === 'true') {
                         const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel();
                         const labels = yield octokit.issues.listLabelsOnIssue({
