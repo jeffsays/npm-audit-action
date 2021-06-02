@@ -74,7 +74,7 @@ export async function run(): Promise<void> {
         )
 
         if (addPrLabels === 'true') {
-          const highestVulnerabilitylevel = audit.getHighestVulnerabilityLevel()
+          const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel()
 
           const labels = await octokit.issues.listLabelsOnIssue({
             owner: github.context.repo.owner,
@@ -94,7 +94,7 @@ export async function run(): Promise<void> {
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             issue_number: ctx.event.number,
-            labels: [...filteredLabelNames, highestVulnerabilitylevel]
+            labels: [...filteredLabelNames, highestVulnerabilitlevel]
           })
         }
 

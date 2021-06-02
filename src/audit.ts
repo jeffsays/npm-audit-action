@@ -67,27 +67,27 @@ export class Audit {
     const {
       metadata: {vulnerabilities}
     } = JSON.parse(this.stdout)
-    let highestVulnerabilitylevel = ''
+    let highestVulnerabilitlevel = ''
 
     if (vulnerabilities != null && typeof vulnerabilities === 'object') {
       Object.entries<number>(vulnerabilities).forEach(([severity, amount]) => {
         if (severity === 'critical' && amount > 0) {
-          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.CRITICAL)
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.CRITICAL)
         }
         if (severity === 'high' && amount > 0) {
-          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.HIGH)
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.HIGH)
         }
         if (severity === 'moderate' && amount > 0) {
-          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.MODERATE)
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.MODERATE)
         }
         if (severity === 'low' && amount > 0) {
-          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.LOW)
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.LOW)
         }
         if (severity === 'info' && amount > 0) {
-          return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.INFO)
+          return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.INFO)
         }
       })
     }
-    return highestVulnerabilitylevel
+    return highestVulnerabilitlevel
   }
 }

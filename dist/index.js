@@ -603,27 +603,27 @@ class Audit {
     }
     getHighestVulnerabilityLevel() {
         const { metadata: { vulnerabilities } } = JSON.parse(this.stdout);
-        let highestVulnerabilitylevel = '';
+        let highestVulnerabilitlevel = '';
         if (vulnerabilities != null && typeof vulnerabilities === 'object') {
             Object.entries(vulnerabilities).forEach(([severity, amount]) => {
                 if (severity === 'critical' && amount > 0) {
-                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.CRITICAL);
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.CRITICAL);
                 }
                 if (severity === 'high' && amount > 0) {
-                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.HIGH);
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.HIGH);
                 }
                 if (severity === 'moderate' && amount > 0) {
-                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.MODERATE);
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.MODERATE);
                 }
                 if (severity === 'low' && amount > 0) {
-                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.LOW);
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.LOW);
                 }
                 if (severity === 'info' && amount > 0) {
-                    return (highestVulnerabilitylevel = VULNERABILITIY_TYPE.INFO);
+                    return (highestVulnerabilitlevel = VULNERABILITIY_TYPE.INFO);
                 }
             });
         }
-        return highestVulnerabilitylevel;
+        return highestVulnerabilitlevel;
     }
 }
 exports.Audit = Audit;
@@ -1768,7 +1768,7 @@ function run() {
                 if (ctx.event_name === 'pull_request') {
                     yield pr.createComment(token, github.context.repo.owner, github.context.repo.repo, ctx.event.number, audit.strippedStdout());
                     if (addPrLabels === 'true') {
-                        const highestVulnerabilitylevel = audit.getHighestVulnerabilityLevel();
+                        const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel();
                         const labels = yield octokit.issues.listLabelsOnIssue({
                             owner: github.context.repo.owner,
                             repo: github.context.repo.repo,
@@ -1781,7 +1781,7 @@ function run() {
                             owner: github.context.repo.owner,
                             repo: github.context.repo.repo,
                             issue_number: ctx.event.number,
-                            labels: [...filteredLabelNames, highestVulnerabilitylevel]
+                            labels: [...filteredLabelNames, highestVulnerabilitlevel]
                         });
                     }
                     if (failOnVulnerabilityFound === 'true') {
