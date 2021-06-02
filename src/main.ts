@@ -50,7 +50,7 @@ export async function run(): Promise<void> {
 
     // run `npm audit`
     const audit = new Audit()
-    audit.run(auditLevel, productionFlag, 'true')
+    audit.run(auditLevel, productionFlag, 'false')
     core.info(audit.stdout)
     core.setOutput('npm_audit', audit.stdout)
 
@@ -67,13 +67,13 @@ export async function run(): Promise<void> {
 
 
       if (ctx.event_name === 'pull_request') {
-        await pr.createComment(
-          token,
-          github.context.repo.owner,
-          github.context.repo.repo,
-          ctx.event.number,
-          audit.strippedStdout()
-        )
+        // await pr.createComment(
+        //   token,
+        //   github.context.repo.owner,
+        //   github.context.repo.repo,
+        //   ctx.event.number,
+        //   audit.strippedStdout()
+        // )
 
         if (addPrLabels === 'true') {
           const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel()
