@@ -48,9 +48,14 @@ export async function run(): Promise<void> {
       throw new Error('Invalid input: fail_on_vulnerabilities_found')
     }
 
+    const createPrComment = core.getInput('create_pr_comment', {required: false})
+    if (!['true', 'false'].includes(createPrComment)) {
+      throw new Error('Invalid input: create_pr_comment')
+    }
+
     // run `npm audit`
     const audit = new Audit()
-    audit.run(auditLevel, productionFlag, 'true')
+    audit.run(auditLevel, productionFlag, 'false')
     core.info(audit.stdout)
     core.setOutput('npm_audit', audit.stdout)
 
@@ -67,13 +72,15 @@ export async function run(): Promise<void> {
 
 
       if (ctx.event_name === 'pull_request') {
-        await pr.createComment(
-          token,
-          github.context.repo.owner,
-          github.context.repo.repo,
-          ctx.event.number,
-          audit.strippedStdout()
-        )
+        if (createPrComment === 'true') {
+          await pr.createComment(
+            token,
+            github.context.repo.owner,
+            github.context.repo.repo,
+            ctx.event.number,
+            audit.strippedStdout()
+          )
+        }
 
         if (addPrLabels === 'true') {
           const highestVulnerabilitlevel = audit.getHighestVulnerabilityLevel()
